@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Malicious App Detection</title>
+    <style>
+        /* Add your CSS styles here */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            padding: 20px;
+            background: linear-gradient(to right, #4b2590, #d76d77, #ffaf7b);
+            color: #080000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh; /* Full viewport height */
+            background-image: url('https://static.vecteezy.com/system/resources/previews/009/398/587/original/protection-metallic-shield-clipart-design-illustration-free-png.png'); /* Specify the path to your image file */
+            background-size: 35% auto; /* Zoom out the background image by 75% */
+            background-position: center;
+            padding-right: 40px;
+            background-repeat: no-repeat;
+        }
+
+        h1 {
+            color: #000000;
+            text-align: center;
+            margin-bottom: 50px;
+            padding-left: 15px;
+            text-shadow: 4px 4px 6px #555;
+        }
+
+        #appForm {
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #000000;
+        }
+
+        #file {
+            display: block;
+            margin-bottom: 10px;
+            padding: 10px;
+            width: 100%;
+            border: 2px solid #000000;
+            border-radius: 5px;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        #file::placeholder {
+            color: #000000; /* Set text color to black */
+            font-weight: bold; /* Make it bold */
+        }
+
+        button {
+            padding: 10px 20px;
+            background-color: #2980b9;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        button:hover {
+            background-color: #2378b1;
+        }
+
+        #result {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .toast {
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+        .Malicious {
+            background-color: #e74c3c; /* Red */
+        }
+
+        .NoMalicious {
+            background-color: #2ecc71; /* Green */
+        }
+
+        .loader {
+             border: 8px solid #727272; /* Light grey */
+             border-top: 8px solid#000000; /* Black */
+             border-radius: 50%;
+             width: 25px;
+             height: 25px;
+             animation: spin 3s linear infinite;
+        }
+        .news-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            font-family: "Roboto", sans-serif;
+            box-shadow: 0 4px 8px -4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .news-container .title {
+            position: absolute;
+            background: #df2020;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            padding: 0 24px;
+            color: white;
+            font-weight: bold;
+            z-index: 200;
+        }
+        
+        .news-container ul {
+            display: flex;
+            list-style: none;
+            margin: 0;
+            animation: scroll 25s infinite linear;
+        }
+        
+        .news-container ul li {
+            white-space: nowrap;
+            padding: 10px 24px;
+            color: #494949;
+            position: relative;
+        }
+        
+        .news-container ul li::after {
+            content:"";
+            width: 1px;
+            height: 100%;
+            background: #b8b8b8;
+            position: absolute;
+            top: 0;
+            right: 0;
+        }
+        
+        .news-container ul li:last-child::after {
+            display: none;
+        }
+        
+        @keyframes scroll {
+            from {
+                transform: translateX(100%);
+            }
+        
+            to {
+                transform: translateX(-1083px);
+        
+            }
+        }
+
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+    </style>
+</head>
+<body>
+    <div class="news-container">
+        <div class="title">
+            IMPORTANT NOTES:
+        </div>
+
+        <ul>
+            <li>
+                Think twice before clicking links or downloading anything!!
+            </li>
+
+            <li>
+                Keep Your Operating System Updated
+            </li>
+
+            <li>
+                Regularly Check Installed Apps
+            </li>
+        </ul>
+    </div>
+
+    <h1>Malicious App Detection</h1>
+    <form id="appForm" enctype="multipart/form-data">
+        <label for="file">Upload an application file: </label>
+        <input type="file" id="file" name="file" placeholder="No file chosen">
+        <button type="button" onclick="submitForm()">Submit</button>
+    </form>
+
+    <div id="result">
+        <p>Result:</p>
+        <div id="result-message">Add APK and press Submit....</div>
+    </div>
+    <div id="toastBox"></div>
+
+    <div class="loader" style="display: none;"></div>
+
+    
+
+
+    <script src="https://kit.fontawesome.com/c4254e24a8.js" crossorigin="anonymous"></script>
+    <script>
+        function submitForm() {
+            const loader = document.querySelector('.loader');
+            loader.style.display = 'block'; // Show loader
+        
+            const formData = new FormData();
+            const fileInput = document.getElementById('file');
+            formData.append('apk', fileInput.files[0]);
+        
+            fetch('/', {
+                method: 'POST',
+                body: formData,
+            })
+            .then(response => response.json())
+            .then(data => {
+                displayAnalysisResult(data);
+                console.log(data);
+                loader.style.display = 'none'; // Hide loader after fetch completes
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                loader.style.display = 'none'; // Also hide loader in case of error
+            });
+        }
+        
+        function displayAnalysisResult(result) {
+            const resultDiv = document.getElementById('result-message');
+        
+            // Clear previous results
+            resultDiv.innerHTML = `<p>${result.messages[0]}</p>
+            <p>${result.messages[1]}</p>
+            <p>${result.result.name}</p>
+            <p>${result.result.hash_value}</p>`;
+        }
+        
+    </script>
+</body>
+</html>
